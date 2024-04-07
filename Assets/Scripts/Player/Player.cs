@@ -25,6 +25,18 @@ public class Player : MonoBehaviour
     private bool isFalling;
     private float jumpTimeCounter;
 
+
+
+    public KeyCode leftButton;
+    public KeyCode leftButton2; //for joystick or DPAD
+    public KeyCode rightButton;
+    public KeyCode rightButton2; //for joystick or DPAD
+    public KeyCode JumpButton;
+
+    
+   
+
+
     private RaycastHit2D groundHit;
 
     private Coroutine resetAnimationTrigger;
@@ -33,7 +45,6 @@ public class Player : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        //animator.GetComponent<Animator>();
         animator = GetComponent<Animator>();
         playerCollider = GetComponent<Collider2D>();
 
@@ -41,7 +52,7 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        if (moveInputX == 0 )
+        if (rb.velocity.x == 0)
         {
             animator.SetInteger("AnimState", 0);
         }
@@ -52,30 +63,41 @@ public class Player : MonoBehaviour
     #region Movement Functions
     private void Move()
     {
-        moveInputX = UserInput.instance.moveInput.x;
-        
 
-        if (moveInputX > 0 || moveInputX < 0)
+
+
+        if (Input.GetKey(leftButton) || Input.GetKey(leftButton2))
+        {
+            rb.velocity = new Vector2(-moveSpeed, rb.velocity.y);
+        }
+        else if (Input.GetKey(rightButton) || Input.GetKey(rightButton2))
+        {
+            rb.velocity = new Vector2(moveSpeed, rb.velocity.y);
+        }
+        else
+        {
+            rb.velocity = new Vector2(0, rb.velocity.y);
+        }
+
+        if (rb.velocity.x > 0 || rb.velocity.x < 0)
         {
             TurnCheck();
             if (IsGrounded())
             {
                 animator.SetInteger("AnimState", 2);
             }
-            
-        }
 
-        rb.velocity = new Vector2(moveInputX * moveSpeed, rb.velocity.y);
+        }
 
     }
 
     private void TurnCheck()
     {
-        
 
-        if (UserInput.instance.moveInput.x > 0)
+
+        if (rb.velocity.x > 0)
             transform.localScale = new Vector3(-1.0f, 1.0f, 1.0f);
-        else if (UserInput.instance.moveInput.x < 0)
+        else if (rb.velocity.x < 0)
             transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
     }
     #endregion
@@ -84,7 +106,7 @@ public class Player : MonoBehaviour
     private void Jump()
     {
         //button was pushed this frame
-        if (UserInput.instance.controls.Jumping.Jump.WasPressedThisFrame() && IsGrounded())
+        if (Input.GetKeyDown(JumpButton) && IsGrounded())
         {
             animator.SetTrigger("Jump");
             animator.SetBool("Grounded", false);
@@ -94,15 +116,14 @@ public class Player : MonoBehaviour
         }
 
         //button is being held
-        if (UserInput.instance.controls.Jumping.Jump.IsPressed())
+        if (Input.GetKey(JumpButton))
         {
-            
-            if(jumpTimeCounter > 0 && isJumping)
+
+            if (jumpTimeCounter > 0 && isJumping)
             {
-                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
                 jumpTimeCounter -= Time.deltaTime;
             }
-            else if(jumpTimeCounter == 0)
+            else if (jumpTimeCounter == 0)
             {
                 isFalling = true;
                 isJumping = false;
@@ -114,16 +135,16 @@ public class Player : MonoBehaviour
         }
 
         //button is released
-        if (UserInput.instance.controls.Jumping.Jump.WasReleasedThisFrame())
+        if (Input.GetKeyUp(JumpButton))
         {
             isJumping = false;
             isFalling = true;
         }
 
-      
-        if(!isJumping && CheckForLand())
+
+        if (!isJumping && CheckForLand())
         {
-            
+
             resetAnimationTrigger = StartCoroutine(Reset());
         }
         DrawGroundcheck();
@@ -135,7 +156,7 @@ public class Player : MonoBehaviour
     {
         groundHit = Physics2D.BoxCast(playerCollider.bounds.center, playerCollider.bounds.size, 0f, Vector2.down, extraHeight, groundSensor);
 
-        if(groundHit.collider != null)
+        if (groundHit.collider != null)
         {
             return true;
         }

@@ -20,29 +20,56 @@ public class PlayerAttack : MonoBehaviour
 
     public bool shouldCauseDamage { get; private set; } = false;
 
+    private bool isAttacking = false;
+
+    //****************
+    public bool attackingPlayer = false;
+    public bool defendingPlayer = false;
+    public int playerNumber;
+    //*************
+
+    public KeyCode attackButton;
+
     private void Start()
     {
         animator = GetComponent<Animator>();
 
         attackTimeCounter = attackBuffer;
+
+        if (gameObject.CompareTag("Player1"))
+        {
+            playerNumber = 1;
+        }
+        else
+        {
+            playerNumber = 2;
+        }
     }
 
-
+  
     private void Update()
     {
-        if (UserInput.instance.controls.Attack.Attack.WasPressedThisFrame() && attackTimeCounter >= attackBuffer)
+        if (!isAttacking && Input.GetKeyDown(attackButton) && attackTimeCounter >= attackBuffer)
         {
-            attackTimeCounter = 0f;
-
-            animator.SetTrigger("Attack");
+            Attack();
         }
 
         attackTimeCounter += Time.deltaTime;
     }
 
 
+    private void Attack()
+    {
+        attackTimeCounter = 0f;
+        isAttacking = true;
+        animator.SetTrigger("Attack");
+
+
+    }
+
     public IEnumerator DamageWhileSlashing()
     {
+       
         shouldCauseDamage = true;
 
         while (shouldCauseDamage)
@@ -55,8 +82,19 @@ public class PlayerAttack : MonoBehaviour
 
                 if (damageable != null && !damageable.hasTakenDamage)
                 {
-                    damageable.Damage(damageAmount);
-                    damageables.Add(damageable);
+                    if (attackingPlayer || hits[i].collider.CompareTag("Orb"))
+                    {
+
+                        damageable.Damage(damageAmount, playerNumber);
+                        damageables.Add(damageable);
+
+                    }
+                    else if(defendingPlayer)
+                    {
+                        damageable.KnockOut();
+                        damageables.Add(damageable);
+                    }
+
                 }
             }
 
@@ -64,6 +102,7 @@ public class PlayerAttack : MonoBehaviour
         }
 
         MakeDamageableAgain();
+        isAttacking = false;
 
     }
 
@@ -78,7 +117,7 @@ public class PlayerAttack : MonoBehaviour
         damageables.Clear();
     }
 
-     private void OnDrawGizmosSelected()
+    private void OnDrawGizmosSelected()
     {
         Gizmos.DrawWireSphere(attackTransform.position, attackRange);
     }

@@ -47,6 +47,7 @@ public class Orb : MonoBehaviour
             // Reset rotation speed
             currentRotationSpeed = initialRotationSpeed;
         }
+
     }
 
     void FixedUpdate()
