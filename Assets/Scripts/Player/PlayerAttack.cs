@@ -11,6 +11,7 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private float damageAmount = 1f;
     [SerializeField] private float attackBuffer = .15f;
 
+    
     private List<IDamageable> damageables = new List<IDamageable>();
     private RaycastHit2D[] hits;
 
@@ -22,13 +23,14 @@ public class PlayerAttack : MonoBehaviour
 
     private bool isAttacking = false;
 
-    //****************
+   
     public bool attackingPlayer = false;
     public bool defendingPlayer = false;
     public int playerNumber;
-    //*************
+   
 
     public KeyCode attackButton;
+    public AudioClip slashNoise;
 
     private void Start()
     {
@@ -52,6 +54,7 @@ public class PlayerAttack : MonoBehaviour
         if (!isAttacking && Input.GetKeyDown(attackButton) && attackTimeCounter >= attackBuffer)
         {
             Attack();
+            AudioManager.instance.PlaySoundEffect(slashNoise);
         }
 
         attackTimeCounter += Time.deltaTime;
@@ -67,6 +70,7 @@ public class PlayerAttack : MonoBehaviour
 
     }
 
+    //damage while slashing in animation
     public IEnumerator DamageWhileSlashing()
     {
        
@@ -84,14 +88,16 @@ public class PlayerAttack : MonoBehaviour
                 {
                     if (attackingPlayer || hits[i].collider.CompareTag("Orb"))
                     {
-
+                       
                         damageable.Damage(damageAmount, playerNumber);
                         damageables.Add(damageable);
 
                     }
                     else if(defendingPlayer)
                     {
-                        damageable.KnockOut();
+                        //*****************
+                        Vector2 bumpFromPosition = gameObject.transform.position;
+                        damageable.KnockOut(bumpFromPosition);
                         damageables.Add(damageable);
                     }
 
@@ -117,17 +123,19 @@ public class PlayerAttack : MonoBehaviour
         damageables.Clear();
     }
 
+    //draw attack area
     private void OnDrawGizmosSelected()
     {
         Gizmos.DrawWireSphere(attackTransform.position, attackRange);
     }
 
-
+    //should cause damage during this part of animation
     public void shouldCauseDamageToTrue()
     {
         shouldCauseDamage = true;
     }
 
+    //stop causing damage
     public void shouldCauseDamageToFalse()
     {
         shouldCauseDamage = false;

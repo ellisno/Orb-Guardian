@@ -16,6 +16,8 @@ public class OrbHealth : MonoBehaviour, IDamageable
     private Color originalColor;
 
 
+    public AudioClip hurtSound;
+    public AudioClip destroyedSound;
 
     // Start is called before the first frame update
     private void Start()
@@ -30,6 +32,7 @@ public class OrbHealth : MonoBehaviour, IDamageable
         StartCoroutine(FlashWhite(0.1f, 3));
         hasTakenDamage = true;
         currentHealth -= damageAmount;
+        AudioManager.instance.PlaySoundEffect(hurtSound);
 
         GameObject player1Object = GameObject.FindGameObjectWithTag("Player1");
         PlayerAttack player1Attack = player1Object.GetComponent<PlayerAttack>();
@@ -39,7 +42,9 @@ public class OrbHealth : MonoBehaviour, IDamageable
 
         if (currentHealth <= 0)
         {
-            if(playerNumber == 1)
+            AudioManager.instance.PlaySoundEffect(destroyedSound);
+
+            if (playerNumber == 1)
             {
                 player1Attack.attackingPlayer = true;
                 player2Attack.defendingPlayer = true;
@@ -60,7 +65,7 @@ public class OrbHealth : MonoBehaviour, IDamageable
         Destroy(gameObject);
     }
 
-    public void Knockout()
+    public void Knockout(Vector2 bumpFromPosition)
     {
         return;
     }
@@ -80,6 +85,11 @@ public class OrbHealth : MonoBehaviour, IDamageable
     }
 
     public void KnockOut()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void KnockOut(Vector2 bumpFromPosition)
     {
         throw new System.NotImplementedException();
     }

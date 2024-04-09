@@ -26,16 +26,14 @@ public class Player : MonoBehaviour
     private float jumpTimeCounter;
 
 
-
+    [Header("Controls")]
     public KeyCode leftButton;
-    public KeyCode leftButton2; //for joystick or DPAD
     public KeyCode rightButton;
-    public KeyCode rightButton2; //for joystick or DPAD
     public KeyCode JumpButton;
 
-    
-   
 
+    public AudioClip jumpNoise;
+    public AudioClip walkNoise;
 
     private RaycastHit2D groundHit;
 
@@ -66,11 +64,11 @@ public class Player : MonoBehaviour
 
 
 
-        if (Input.GetKey(leftButton) || Input.GetKey(leftButton2))
+        if (Input.GetKey(leftButton))
         {
             rb.velocity = new Vector2(-moveSpeed, rb.velocity.y);
         }
-        else if (Input.GetKey(rightButton) || Input.GetKey(rightButton2))
+        else if (Input.GetKey(rightButton))
         {
             rb.velocity = new Vector2(moveSpeed, rb.velocity.y);
         }
@@ -84,6 +82,7 @@ public class Player : MonoBehaviour
             TurnCheck();
             if (IsGrounded())
             {
+                AudioManager.instance.PlaySoundEffect(walkNoise);
                 animator.SetInteger("AnimState", 2);
             }
 
@@ -109,6 +108,7 @@ public class Player : MonoBehaviour
         if (Input.GetKeyDown(JumpButton) && IsGrounded())
         {
             animator.SetTrigger("Jump");
+            AudioManager.instance.PlaySoundEffect(jumpNoise);
             animator.SetBool("Grounded", false);
             isJumping = true;
             jumpTimeCounter = jumpTime;
